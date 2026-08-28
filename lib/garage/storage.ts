@@ -20,7 +20,7 @@ export interface GameSettings {
 export const DEFAULT_SETTINGS: GameSettings = {
   quality: "high",
   soundEnabled: true,
-  masterVolume: 0.8,
+  masterVolume: 0.22,
   autoLaunch: true,
   autoShift: true,
 };

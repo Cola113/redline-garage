@@ -1,8 +1,8 @@
 // components/garage/DragStripScene.tsx
-// Redline Garage - High-Speed 1/4 Mile Drag Strip 3D Environment & Dynamic Camera
+// Redline Garage - High-Polish 1/4 Mile Drag Strip with Stadium Floodlights & Illuminated Gantry
 
-import React, { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import React, { Suspense, useMemo, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { CarConfig, QualitySetting, RaceTelemetry } from "@/lib/garage/types";
 import { ModularCar } from "./ModularCar";
@@ -10,254 +10,279 @@ import { ModularCar } from "./ModularCar";
 interface DragStripSceneProps {
   config: CarConfig;
   telemetry: RaceTelemetry;
-  countdownStep: number; // 0=未开始, 1=Stage, 2=Yellow1, 3=Yellow2, 4=Yellow3, 5=Green, -1=Red
+  countdownStep: number;
   cameraMode: "chase" | "hood" | "side";
   quality: QualitySetting;
   opponentConfig?: CarConfig;
   opponentDistance?: number;
 }
 
-// 圣诞树发车灯塔 (Christmas Tree)
-function ChristmasTree({ countdownStep }: { countdownStep: number }) {
-  const isStaged = countdownStep >= 1;
-  const isYellow1 = countdownStep === 2 || countdownStep >= 5;
-  const isYellow2 = countdownStep === 3 || countdownStep >= 5;
-  const isYellow3 = countdownStep === 4 || countdownStep >= 5;
+// 圣诞树起跑信号塔 (Christmas Tree Starting Tower)
+const ChristmasTreeTower: React.FC<{ countdownStep: number }> = ({ countdownStep }) => {
+  const isStaged = countdownStep >= 0;
+  const isAmber1 = countdownStep >= 2;
+  const isAmber2 = countdownStep >= 3;
+  const isAmber3 = countdownStep >= 4;
   const isGreen = countdownStep === 5;
-  const isRed = countdownStep === -1;
 
   return (
-    <group position={[3.2, 0, 12]}>
+    <group position={[0, 0, 5.0]}>
       {/* 黑色立柱 */}
-      <mesh position={[0, 2.5, 0]}>
-        <boxGeometry args={[0.3, 5.0, 0.3]} />
-        <meshStandardMaterial color="#1a1a1c" metalness={0.8} />
+      <mesh position={[0, 2.2, 0]}>
+        <boxGeometry args={[0.22, 4.4, 0.22]} />
+        <meshStandardMaterial color="#1a1c23" metalness={0.8} roughness={0.3} />
       </mesh>
 
-      {/* 预备蓝色指示灯 (Pre-stage & Stage) */}
-      <mesh position={[0, 4.4, 0.2]}>
-        <boxGeometry args={[0.7, 0.22, 0.1]} />
-        <meshStandardMaterial
-          color={isStaged ? "#00ddff" : "#112233"}
-          emissive={isStaged ? "#00ddff" : "#000000"}
-          emissiveIntensity={isStaged ? 2.5 : 0}
-        />
+      {/* 顶端 STAGED 准备灯 */}
+      <mesh position={[-0.22, 3.8, 0]}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color={isStaged ? "#ffffff" : "#333333"} />
+      </mesh>
+      <mesh position={[0.22, 3.8, 0]}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color={isStaged ? "#ffffff" : "#333333"} />
       </mesh>
 
       {/* 黄灯 1 */}
-      <mesh position={[0, 3.8, 0.2]}>
-        <sphereGeometry args={[0.16, 16, 16]} />
-        <meshStandardMaterial
-          color={isYellow1 ? "#ffb300" : "#332200"}
-          emissive={isYellow1 ? "#ffb300" : "#000000"}
-          emissiveIntensity={isYellow1 ? 3.0 : 0}
-        />
+      <mesh position={[-0.22, 3.2, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber1 ? "#fbbf24" : "#332200"} />
+      </mesh>
+      <mesh position={[0.22, 3.2, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber1 ? "#fbbf24" : "#332200"} />
       </mesh>
 
       {/* 黄灯 2 */}
-      <mesh position={[0, 3.2, 0.2]}>
-        <sphereGeometry args={[0.16, 16, 16]} />
-        <meshStandardMaterial
-          color={isYellow2 ? "#ffb300" : "#332200"}
-          emissive={isYellow2 ? "#ffb300" : "#000000"}
-          emissiveIntensity={isYellow2 ? 3.0 : 0}
-        />
+      <mesh position={[-0.22, 2.7, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber2 ? "#fbbf24" : "#332200"} />
+      </mesh>
+      <mesh position={[0.22, 2.7, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber2 ? "#fbbf24" : "#332200"} />
       </mesh>
 
       {/* 黄灯 3 */}
-      <mesh position={[0, 2.6, 0.2]}>
-        <sphereGeometry args={[0.16, 16, 16]} />
-        <meshStandardMaterial
-          color={isYellow3 ? "#ffb300" : "#332200"}
-          emissive={isYellow3 ? "#ffb300" : "#000000"}
-          emissiveIntensity={isYellow3 ? 3.0 : 0}
-        />
+      <mesh position={[-0.22, 2.2, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber3 ? "#fbbf24" : "#332200"} />
+      </mesh>
+      <mesh position={[0.22, 2.2, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshBasicMaterial color={isAmber3 ? "#fbbf24" : "#332200"} />
       </mesh>
 
-      {/* 绿灯 (Go!) */}
-      <mesh position={[0, 2.0, 0.2]}>
-        <sphereGeometry args={[0.18, 16, 16]} />
-        <meshStandardMaterial
-          color={isGreen ? "#00ff44" : "#003311"}
-          emissive={isGreen ? "#00ff44" : "#000000"}
-          emissiveIntensity={isGreen ? 3.5 : 0}
-        />
+      {/* 绿灯 (GO!) */}
+      <mesh position={[-0.22, 1.6, 0]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshBasicMaterial color={isGreen ? "#22c55e" : "#052e16"} />
+      </mesh>
+      <mesh position={[0.22, 1.6, 0]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshBasicMaterial color={isGreen ? "#22c55e" : "#052e16"} />
       </mesh>
 
-      {/* 抢跑红灯 */}
-      {isRed && (
-        <mesh position={[0, 1.4, 0.2]}>
-          <sphereGeometry args={[0.18, 16, 16]} />
-          <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={3.5} />
-        </mesh>
-      )}
+      {/* 绿灯泛光 */}
+      {isGreen && <pointLight position={[0, 1.6, 0.4]} color="#22c55e" intensity={4.0} distance={12} />}
+      {isAmber3 && <pointLight position={[0, 2.2, 0.4]} color="#fbbf24" intensity={3.0} distance={10} />}
     </group>
   );
-}
+};
 
-// 赛道主体 (沥青、标线、护栏、看台广告牌、路灯)
-function TrackEnvironment({ quality }: { quality: QualitySetting }) {
-  const lightCount = 14;
+// 动态赛道环境 (450米高亮沥青路面、胶痕、路肩、终点龙门架、高杆探照灯)
+const DragStripTrack: React.FC<{ playerZ: number; quality: QualitySetting }> = ({
+  playerZ,
+  quality,
+}) => {
+  const isHigh = quality === "high";
 
-  const stadiumLights = useMemo(() => {
-    const list = [];
-    for (let i = 0; i < lightCount; i++) {
-      const z = -i * 36 + 20;
-      list.push(z);
+  // 沿途高杆探照灯塔 (每 40 米一座，全场高亮度)
+  const lightPoles = useMemo(() => {
+    const poles = [];
+    for (let z = -20; z <= 460; z += 40) {
+      poles.push(z);
     }
-    return list;
+    return poles;
   }, []);
 
   return (
     <group>
-      {/* 1. 沥青路面 (长 480m) */}
-      <mesh position={[0, 0, -220]} receiveShadow>
-        <planeGeometry args={[14, 520]} />
-        <meshStandardMaterial color="#1a1c20" roughness={0.92} metalness={0.1} />
+      {/* 1. 环境光底座与黄昏天光 (暗部饱满) */}
+      <ambientLight intensity={0.8} color="#e2e8f0" />
+      <directionalLight position={[20, 30, -50]} intensity={1.8} color="#fed7aa" />
+      <directionalLight position={[-20, 20, 50]} intensity={1.2} color="#93c5fd" />
+
+      {/* 2. 主沥青赛道 (宽 18米，长 520米) */}
+      <mesh position={[0, -0.01, 220]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[18, 560]} />
+        <meshStandardMaterial color="#262930" roughness={0.7} metalness={0.15} />
       </mesh>
 
-      {/* 2. 起跑线与烧胎胶痕印 (Rubber Groove) */}
-      <mesh position={[-2.2, 0.005, 1.0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2.2, 14]} />
-        <meshBasicMaterial color="#0c0d10" transparent opacity={0.8} />
-      </mesh>
-      <mesh position={[2.2, 0.005, 1.0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2.2, 14]} />
-        <meshBasicMaterial color="#0c0d10" transparent opacity={0.8} />
-      </mesh>
-
-      {/* 起跑白线 */}
-      <mesh position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[12, 0.4]} />
+      {/* 赛道中央分道线与双车道起跑胶印 */}
+      <mesh position={[0, 0.002, 220]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.3, 560]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
 
-      {/* 中央虚线隔断 (双车道) */}
-      {Array.from({ length: 45 }).map((_, idx) => (
-        <mesh key={idx} position={[0, 0.008, -idx * 10 - 5]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.25, 4]} />
-          <meshBasicMaterial color="#f0b800" />
-        </mesh>
-      ))}
-
-      {/* 3. 两侧水泥防撞护栏 */}
-      <mesh position={[-6.8, 0.5, -220]}>
-        <boxGeometry args={[0.5, 1.0, 520]} />
-        <meshStandardMaterial color="#555860" roughness={0.7} />
-      </mesh>
-      <mesh position={[6.8, 0.5, -220]}>
-        <boxGeometry args={[0.5, 1.0, 520]} />
-        <meshStandardMaterial color="#555860" roughness={0.7} />
-      </mesh>
-
-      {/* 4. 赛道两侧高亮探照灯塔 */}
-      {stadiumLights.map((zPos, idx) => (
-        <group key={idx}>
-          {/* 左侧灯塔 */}
-          <mesh position={[-7.8, 5, zPos]}>
-            <cylinderGeometry args={[0.15, 0.25, 10, 8]} />
-            <meshStandardMaterial color="#2a2c32" metalness={0.8} />
+      {/* 起跑线双胎黑胶痕 (Rubber Groove) */}
+      {[-2.2, 2.2].map((laneX, laneIdx) => (
+        <group key={laneIdx} position={[laneX, 0.003, 25]}>
+          <mesh position={[-0.8, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.45, 75]} />
+            <meshBasicMaterial color="#111317" />
           </mesh>
-          <pointLight position={[-7.5, 9.8, zPos]} intensity={quality === "low" ? 0.8 : 1.5} distance={38} color="#fff8e8" />
-
-          {/* 右侧灯塔 */}
-          <mesh position={[7.8, 5, zPos]}>
-            <cylinderGeometry args={[0.15, 0.25, 10, 8]} />
-            <meshStandardMaterial color="#2a2c32" metalness={0.8} />
+          <mesh position={[0.8, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.45, 75]} />
+            <meshBasicMaterial color="#111317" />
           </mesh>
-          <pointLight position={[7.5, 9.8, zPos]} intensity={quality === "low" ? 0.8 : 1.5} distance={38} color="#fff8e8" />
         </group>
       ))}
 
-      {/* 5. 冲线终点门架 (Finish Line Gantry at 402.33m -> Z = -402.33) */}
-      <group position={[0, 0, -402.33]}>
-        {/* 龙门架立柱 */}
-        <mesh position={[-6.5, 4.5, 0]}>
-          <boxGeometry args={[0.8, 9, 0.8]} />
-          <meshStandardMaterial color="#e62117" metalness={0.6} />
+      {/* 起跑白线 (0米) */}
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[18, 0.6]} />
+        <meshBasicMaterial color="#ffffff" />
+      </mesh>
+
+      {/* 左右两侧混凝土防撞墙与广告发光板 */}
+      {[-9.2, 9.2].map((x, idx) => (
+        <mesh key={idx} position={[x, 0.6, 220]}>
+          <boxGeometry args={[0.6, 1.2, 560]} />
+          <meshStandardMaterial color="#374151" roughness={0.6} />
         </mesh>
-        <mesh position={[6.5, 4.5, 0]}>
-          <boxGeometry args={[0.8, 9, 0.8]} />
-          <meshStandardMaterial color="#e62117" metalness={0.6} />
+      ))}
+
+      {/* 左右防撞墙顶部警示黄线 */}
+      {[-9.2, 9.2].map((x, idx) => (
+        <mesh key={idx} position={[x, 1.21, 220]}>
+          <boxGeometry args={[0.62, 0.04, 560]} />
+          <meshBasicMaterial color="#eab308" />
         </mesh>
-        {/* 横梁 */}
-        <mesh position={[0, 8.5, 0]}>
-          <boxGeometry args={[14, 1.2, 1.0]} />
-          <meshStandardMaterial color="#1a1a1e" metalness={0.8} />
+      ))}
+
+      {/* 高杆探照灯群 */}
+      {lightPoles.map((poleZ, idx) => (
+        <group key={idx}>
+          {/* 左侧灯柱 */}
+          <group position={[-11, 0, poleZ]}>
+            <mesh position={[0, 5, 0]}>
+              <cylinderGeometry args={[0.15, 0.25, 10, 8]} />
+              <meshStandardMaterial color="#475569" metalness={0.7} />
+            </mesh>
+            <mesh position={[1.5, 9.8, 0]} rotation={[0, 0, -0.4]}>
+              <boxGeometry args={[2.8, 0.4, 0.8]} />
+              <meshStandardMaterial color="#1e293b" />
+            </mesh>
+            {/* 4 颗高亮发光灯泡 */}
+            <mesh position={[1.5, 9.6, 0]}>
+              <boxGeometry args={[2.6, 0.05, 0.6]} />
+              <meshBasicMaterial color="#fffbeb" />
+            </mesh>
+            <pointLight position={[2, 9.2, 0]} intensity={isHigh ? 3.2 : 2.0} distance={45} color="#fff8ea" />
+          </group>
+
+          {/* 右侧灯柱 */}
+          <group position={[11, 0, poleZ]}>
+            <mesh position={[0, 5, 0]}>
+              <cylinderGeometry args={[0.15, 0.25, 10, 8]} />
+              <meshStandardMaterial color="#475569" metalness={0.7} />
+            </mesh>
+            <mesh position={[-1.5, 9.8, 0]} rotation={[0, 0, 0.4]}>
+              <boxGeometry args={[2.8, 0.4, 0.8]} />
+              <meshStandardMaterial color="#1e293b" />
+            </mesh>
+            <mesh position={[-1.5, 9.6, 0]}>
+              <boxGeometry args={[2.6, 0.05, 0.6]} />
+              <meshBasicMaterial color="#fffbeb" />
+            </mesh>
+            <pointLight position={[-2, 9.2, 0]} intensity={isHigh ? 3.2 : 2.0} distance={45} color="#fff8ea" />
+          </group>
+        </group>
+      ))}
+
+      {/* 3. 终点龙门架 (402.33 米 / 1/4 英里) */}
+      <group position={[0, 0, 402.33]}>
+        {/* 跨道桁架 */}
+        <mesh position={[0, 7.5, 0]}>
+          <boxGeometry args={[22, 1.6, 1.2]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.8} />
         </mesh>
-        {/* FINISH 霓虹标牌 */}
-        <mesh position={[0, 8.5, 0.6]}>
-          <boxGeometry args={[7, 0.8, 0.1]} />
-          <meshStandardMaterial color="#ff3b30" emissive="#ff3b30" emissiveIntensity={3.0} />
+        {/* 左立柱 */}
+        <mesh position={[-10.5, 3.8, 0]}>
+          <cylinderGeometry args={[0.35, 0.35, 7.6, 12]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.8} />
         </mesh>
-        {/* 终点黑白方格旗地标 */}
-        <mesh position={[0, 0.009, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[12, 1.2]} />
+        {/* 右立柱 */}
+        <mesh position={[10.5, 3.8, 0]}>
+          <cylinderGeometry args={[0.35, 0.35, 7.6, 12]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.8} />
+        </mesh>
+        {/* 终点发光大标语 "1/4 MILE FINISH" */}
+        <mesh position={[0, 7.5, 0.65]}>
+          <boxGeometry args={[12, 1.1, 0.05]} />
+          <meshBasicMaterial color="#ef4444" />
+        </mesh>
+        <pointLight position={[0, 6.5, 1.5]} color="#ef4444" intensity={6.0} distance={25} />
+
+        {/* 终点地面黑白方格旗终点线 */}
+        <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[18, 1.5]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
       </group>
-
-      {/* 天空与黄昏天际线氛围光 */}
-      <ambientLight intensity={0.25} />
-      <directionalLight position={[20, 30, -50]} intensity={0.9} color="#ffaa66" />
-      <directionalLight position={[-20, 20, 50]} intensity={0.5} color="#4477aa" />
     </group>
   );
-}
+};
 
-// 动态跟随镜头控制器 (Chase Camera with FOV Stretch & Screen Shake)
-function DynamicCameraController({
-  carZ,
-  speedKmh,
-  gForce,
-  cameraMode,
-}: {
-  carZ: number;
-  speedKmh: number;
-  gForce: number;
+// 动态赛道镜头控制器 (Dynamic Chase Camera with Speed-FOV Stretch & Shake)
+const CameraRig: React.FC<{
+  playerZ: number;
+  speedMs: number;
   cameraMode: "chase" | "hood" | "side";
-}) {
-  useFrame(({ camera }) => {
-    // 动态拉伸 FOV (极速感)
-    const targetFov = 44 + Math.min(26, (speedKmh / 350) * 26);
-    if ("fov" in camera) {
-      (camera as THREE.PerspectiveCamera).fov = THREE.MathUtils.lerp(
-        (camera as THREE.PerspectiveCamera).fov,
-        targetFov,
-        0.05
-      );
-      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
-    }
+}> = ({ playerZ, speedMs, cameraMode }) => {
+  const { camera } = useThree();
 
-    // 镜头抖动 (根据 G 值与高时速)
-    const shakeIntensity = Math.min(0.04, (speedKmh / 300) * 0.025 + Math.max(0, gForce - 1.0) * 0.02);
-    const shakeX = (Math.random() - 0.5) * shakeIntensity;
-    const shakeY = (Math.random() - 0.5) * shakeIntensity;
+  useFrame(() => {
+    const speedRatio = Math.min(1.0, speedMs / 100);
+    const shake = speedRatio > 0.3 ? (Math.random() - 0.5) * speedRatio * 0.04 : 0;
 
-    if (cameraMode === "hood") {
+    if (cameraMode === "chase") {
+      // 追尾视角：根据速度动态后拉并加大广角
+      const targetZ = playerZ - 6.2 - speedRatio * 1.5;
+      const targetY = 1.9 + speedRatio * 0.3;
+      const targetX = -2.2 + shake;
+
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.15);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.15);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.2);
+
+      camera.lookAt(-2.2, 0.7, playerZ + 12.0);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = THREE.MathUtils.lerp(camera.fov, 55 + speedRatio * 15, 0.1);
+        camera.updateProjectionMatrix();
+      }
+    } else if (cameraMode === "hood") {
       // 贴地机盖视角
-      camera.position.set(-2.2 + shakeX, 0.9 + shakeY, carZ + 1.2);
-      camera.lookAt(-2.2, 0.8, carZ - 25);
+      camera.position.set(-2.2, 0.9 + shake, playerZ + 0.6);
+      camera.lookAt(-2.2, 0.75, playerZ + 35.0);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 75;
+        camera.updateProjectionMatrix();
+      }
     } else if (cameraMode === "side") {
-      // 侧方动态追焦
-      camera.position.set(4.8 + shakeX, 1.6 + shakeY, carZ + 4.5);
-      camera.lookAt(-2.2, 0.7, carZ - 6);
-    } else {
-      // 默认经典贴地追尾机位 (Chase Cam)
-      const targetCamX = -2.2 + shakeX;
-      const targetCamY = 1.35 + Math.min(0.3, speedKmh * 0.0008) + shakeY;
-      const targetCamZ = carZ + 4.6 + Math.min(1.2, speedKmh * 0.003);
-
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetCamX, 0.15);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCamY, 0.15);
-      camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetCamZ, 0.25);
-
-      camera.lookAt(-2.2, 0.6, carZ - 18);
+      // 侧方并排特写追焦
+      camera.position.set(-6.8, 1.4 + shake, playerZ - 1.0);
+      camera.lookAt(-2.2, 0.6, playerZ + 3.0);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 60;
+        camera.updateProjectionMatrix();
+      }
     }
   });
 
   return null;
-}
+};
 
 export const DragStripScene: React.FC<DragStripSceneProps> = ({
   config,
@@ -268,27 +293,30 @@ export const DragStripScene: React.FC<DragStripSceneProps> = ({
   opponentConfig,
   opponentDistance = 0,
 }) => {
-  // 赛道坐标系：起点 Z=0，向负 Z 轴飞驰
-  const carZ = -telemetry.distanceMeters;
-  const oppZ = -opponentDistance;
+  const playerZ = telemetry.distanceMeters;
+  const oppZ = opponentDistance;
 
   return (
-    <div className="relative h-full w-full select-none">
-      <Canvas
-        camera={{ position: [-2.2, 1.4, 4.8], fov: 46 }}
-        shadows={quality !== "low"}
-        gl={{ antialias: quality !== "low", powerPreference: "high-performance" }}
-        className="h-full w-full"
-      >
-        <color attach="background" args={["#08080c"]} />
-        <fog attach="fog" args={["#08080c", 30, 220]} />
+    <Canvas
+      shadows={quality === "high"}
+      camera={{ position: [-2.2, 2.0, -6.5], fov: 55 }}
+      gl={{
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.35,
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
+      className="h-full w-full"
+    >
+      <Suspense fallback={null}>
+        {/* 赛道与灯光 */}
+        <DragStripTrack playerZ={playerZ} quality={quality} />
 
-        {/* 赛道与发车灯 */}
-        <TrackEnvironment quality={quality} />
-        <ChristmasTree countdownStep={countdownStep} />
+        {/* 圣诞树起跑信号塔 */}
+        <ChristmasTreeTower countdownStep={countdownStep} />
 
-        {/* 玩家车辆 (左车道 X = -2.2) */}
-        <group position={[-2.2, 0, carZ]}>
+        {/* 玩家赛车 (左车道 X = -2.2) */}
+        <group position={[-2.2, 0, playerZ]}>
           <ModularCar
             config={config}
             speedMs={telemetry.speedMs}
@@ -296,33 +324,27 @@ export const DragStripScene: React.FC<DragStripSceneProps> = ({
             exhaustFlame={telemetry.isShifting || telemetry.nosActive}
             nosActive={telemetry.nosActive}
             wheelieAngleDeg={telemetry.wheelieAngleDeg}
-            tireSmokeIntensity={telemetry.tireSlipRatio > 0.1 ? 0.8 : 0}
+            tireSmokeIntensity={telemetry.tireSlipRatio}
           />
         </group>
 
-        {/* 对手/幽灵车 (右车道 X = 2.2) */}
+        {/* 对手幽灵赛车 (右车道 X = 2.2) */}
         {opponentConfig && (
           <group position={[2.2, 0, oppZ]}>
             <ModularCar
               config={opponentConfig}
               speedMs={telemetry.speedMs * 0.98}
-              rpm={7000}
-              exhaustFlame={false}
-              nosActive={false}
+              rpm={telemetry.rpm * 0.95}
+              exhaustFlame={telemetry.isShifting}
               wheelieAngleDeg={0}
-              tireSmokeIntensity={0}
+              tireSmokeIntensity={oppZ < 20 && countdownStep === 5 ? 0.3 : 0}
             />
           </group>
         )}
 
-        {/* 动态运镜系统 */}
-        <DynamicCameraController
-          carZ={carZ}
-          speedKmh={telemetry.speedKmh}
-          gForce={telemetry.gForce}
-          cameraMode={cameraMode}
-        />
-      </Canvas>
-    </div>
+        {/* 动态赛车机位 */}
+        <CameraRig playerZ={playerZ} speedMs={telemetry.speedMs} cameraMode={cameraMode} />
+      </Suspense>
+    </Canvas>
   );
 };

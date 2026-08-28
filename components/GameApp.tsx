@@ -68,6 +68,7 @@ export const GameApp: React.FC = () => {
   // 2. 设置状态
   const [quality, setQuality] = useState<QualitySetting>("high");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [masterVolume, setMasterVolume] = useState<number>(0.22);
   const [autoMode, setAutoMode] = useState<boolean>(true); // 自动挡 + 自动起步
 
   // 3. 跑线与遥测状态
@@ -110,6 +111,10 @@ export const GameApp: React.FC = () => {
     setLeaderboard(savedRecords);
     setQuality(savedSettings.quality);
     setSoundEnabled(savedSettings.soundEnabled);
+    const vol = savedSettings.masterVolume !== undefined ? savedSettings.masterVolume : 0.22;
+    setMasterVolume(vol);
+    soundEngine.setVolume(vol);
+    soundEngine.setMuted(!savedSettings.soundEnabled);
     setAutoMode(savedSettings.autoShift);
   }, []);
 
@@ -143,6 +148,16 @@ export const GameApp: React.FC = () => {
     setSoundEnabled(nextVal);
     soundEngine.setMuted(!nextVal);
     saveGameSettings({ ...loadGameSettings(), soundEnabled: nextVal });
+  }, [soundEnabled]);
+
+  const handleChangeVolume = useCallback((vol: number) => {
+    setMasterVolume(vol);
+    soundEngine.setVolume(vol);
+    if (vol > 0 && !soundEnabled) {
+      setSoundEnabled(true);
+      soundEngine.setMuted(false);
+    }
+    saveGameSettings({ ...loadGameSettings(), masterVolume: vol, soundEnabled: vol > 0 });
   }, [soundEnabled]);
 
   const handleChangeQuality = useCallback((q: QualitySetting) => {
@@ -452,6 +467,7 @@ export const GameApp: React.FC = () => {
             activeSlot={activeSlot}
             quality={quality}
             soundEnabled={soundEnabled}
+            masterVolume={masterVolume}
             onUpdateConfig={handleUpdateConfig}
             onSelectSlot={handleSelectSlot}
             onSaveSlot={handleSaveSlot}
@@ -459,6 +475,7 @@ export const GameApp: React.FC = () => {
             onGoToRace={handleEnterStaging}
             onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
             onToggleSound={handleToggleSound}
+            onChangeVolume={handleChangeVolume}
             onChangeQuality={handleChangeQuality}
           />
         )}
@@ -480,11 +497,15 @@ export const GameApp: React.FC = () => {
             countdownStep={countdownStep}
             cameraMode={cameraMode}
             autoMode={autoMode}
+            soundEnabled={soundEnabled}
+            masterVolume={masterVolume}
             burnoutTempBonus={burnoutTempBonus}
             isBurningOut={isBurningOut}
             onStartCountdown={handleStartCountdown}
             onSetCameraMode={setCameraMode}
             onToggleAutoMode={() => setAutoMode(!autoMode)}
+            onToggleSound={handleToggleSound}
+            onChangeVolume={handleChangeVolume}
             onStartBurnout={handleStartBurnout}
             onStopBurnout={handleStopBurnout}
             onManualThrottleChange={(th) => (userThrottleRef.current = th)}
