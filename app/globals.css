@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-deep: #0a0a0c;
+  --panel: #141418;
+  --line: #2a2a32;
+  --accent: #ff3b30;
+  --accent-hot: #ffb340;
+}
+
+html,
+body {
+  background: var(--bg-deep);
+  color: #e8e8ec;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+}
