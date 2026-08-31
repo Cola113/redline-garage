@@ -338,6 +338,9 @@ export const DragStripScene: React.FC<DragStripSceneProps> = ({
               exhaustFlame={telemetry.isShifting}
               wheelieAngleDeg={0}
               tireSmokeIntensity={oppZ < 20 && countdownStep === 5 ? 0.3 : 0}
+              isGhost={true}
+              ghostColor="#38bdf8"
+              ghostOpacity={0.82}
             />
           </group>
         )}

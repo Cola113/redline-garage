@@ -17,6 +17,9 @@ interface ModularCarProps {
   wheelieAngleDeg?: number;
   tireSmokeIntensity?: number;
   isGarageView?: boolean;
+  isGhost?: boolean;
+  ghostColor?: string;
+  ghostOpacity?: number;
 }
 
 // 独立高精度车轮总成 (High-Precision Deep Dish Forged Wheel Assembly)
@@ -168,6 +171,9 @@ export const ModularCar: React.FC<ModularCarProps> = ({
   wheelieAngleDeg = 0,
   tireSmokeIntensity = 0,
   isGarageView = false,
+  isGhost = false,
+  ghostColor = "#38bdf8",
+  ghostOpacity = 0.82,
 }) => {
   const rootRef = useRef<THREE.Group>(null);
   const wheelsRef = useRef<{
@@ -182,6 +188,21 @@ export const ModularCar: React.FC<ModularCarProps> = ({
 
   // 1. 高级 PBR 材质库
   const carPaintMaterial = useMemo(() => {
+    if (isGhost) {
+      return new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(ghostColor || config.paintColor || "#38bdf8"),
+        metalness: 0.85,
+        roughness: 0.12,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.08,
+        transparent: true,
+        opacity: ghostOpacity,
+        transmission: 0.2,
+        emissive: new THREE.Color("#0284c7"),
+        emissiveIntensity: 0.35,
+        reflectivity: 0.95,
+      });
+    }
     return new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(config.paintColor || "#dc2626"),
       metalness: config.paintFinish === "matte" ? 0.1 : 0.88,
@@ -191,74 +212,88 @@ export const ModularCar: React.FC<ModularCarProps> = ({
       reflectivity: 0.95,
       envMapIntensity: 2.0,
     });
-  }, [config.paintColor, config.paintFinish]);
+  }, [config.paintColor, config.paintFinish, isGhost, ghostColor, ghostOpacity]);
 
   const carbonFiberMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#181b22"),
+      color: new THREE.Color(isGhost ? "#1e293b" : "#181b22"),
       roughness: 0.35,
       metalness: 0.7,
+      transparent: isGhost,
+      opacity: isGhost ? 0.85 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const chromeMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#ffffff"),
+      color: new THREE.Color(isGhost ? "#bae6fd" : "#ffffff"),
       roughness: 0.06,
       metalness: 0.98,
+      transparent: isGhost,
+      opacity: isGhost ? 0.9 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const titaniumBurnMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
       color: new THREE.Color("#334155"),
       roughness: 0.25,
       metalness: 0.85,
+      transparent: isGhost,
+      opacity: isGhost ? 0.85 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const brakeRotorMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
       color: new THREE.Color("#cbd5e1"),
       roughness: 0.2,
       metalness: 0.92,
+      transparent: isGhost,
+      opacity: isGhost ? 0.85 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const brakeCaliperMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#dc2626"),
+      color: new THREE.Color(isGhost ? "#0ea5e9" : "#dc2626"),
       roughness: 0.2,
       metalness: 0.5,
+      transparent: isGhost,
+      opacity: isGhost ? 0.9 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const rubberMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#13151b"),
+      color: new THREE.Color(isGhost ? "#0f172a" : "#13151b"),
       roughness: 0.88,
       metalness: 0.05,
+      transparent: isGhost,
+      opacity: isGhost ? 0.88 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const rimMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#e2e8f0"),
+      color: new THREE.Color(isGhost ? "#bae6fd" : "#e2e8f0"),
       roughness: 0.12,
       metalness: 0.94,
+      transparent: isGhost,
+      opacity: isGhost ? 0.9 : 1.0,
     });
-  }, []);
+  }, [isGhost]);
 
   const glassMat = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#090d16"),
+      color: new THREE.Color(isGhost ? "#0284c7" : "#090d16"),
       roughness: 0.04,
       metalness: 0.1,
       transmission: 0.82,
       transparent: true,
-      opacity: 0.88,
+      opacity: isGhost ? 0.7 : 0.88,
     });
-  }, []);
+  }, [isGhost]);
 
   const interiorMat = useMemo(() => {
     return new THREE.MeshStandardMaterial({

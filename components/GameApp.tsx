@@ -80,7 +80,11 @@ export const GameApp: React.FC = () => {
   const [latestResult, setLatestResult] = useState<RaceResult | null>(null);
 
   // 对手车状态 (幽灵车同台竞技)
-  const [opponentConfig, setOpponentConfig] = useState<CarConfig>(PRESET_BUILDS[1].config);
+  const [opponentConfig, setOpponentConfig] = useState<CarConfig>(() => ({
+    ...PRESET_BUILDS[1].config,
+    paintColor: "#38bdf8",
+    paintFinish: "metallic",
+  }));
   const [opponentDistance, setOpponentDistance] = useState<number>(0);
 
   // Refs 用于高帧率物理循环，避免 React State 频繁重渲染导致掉帧
