@@ -17,75 +17,150 @@ interface DragStripSceneProps {
   opponentDistance?: number;
 }
 
-// 圣诞树起跑信号塔 (Christmas Tree Starting Tower)
+// 专业圣诞树起跑信号塔 (Authentic NHRA-Style Drag Tree Starting Tower)
 const ChristmasTreeTower: React.FC<{ countdownStep: number }> = ({ countdownStep }) => {
-  const isStaged = countdownStep >= 0;
+  const isPreStage = countdownStep >= 0;
+  const isStage = countdownStep >= 1;
   const isAmber1 = countdownStep >= 2;
   const isAmber2 = countdownStep >= 3;
   const isAmber3 = countdownStep >= 4;
   const isGreen = countdownStep === 5;
 
+  // 单组遮光筒灯具 (Cowl Visor Lamp Assembly)
+  const TreeLampPair = ({
+    y,
+    active,
+    activeColor,
+    inactiveColor,
+    emissiveIntensity = 5.0,
+    radius = 0.11,
+  }: {
+    y: number;
+    active: boolean;
+    activeColor: string;
+    inactiveColor: string;
+    emissiveIntensity?: number;
+    radius?: number;
+  }) => (
+    <group position={[0, y, 0]}>
+      {[-0.24, 0.24].map((x, i) => (
+        <group key={i} position={[x, 0, 0]}>
+          {/* 黑色金属遮光筒 (Sun Visor Cowl) */}
+          <mesh position={[0, 0, 0.08]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[radius * 1.35, radius * 1.35, 0.18, 16, 1, true]} />
+            <meshStandardMaterial color="#0b0c10" metalness={0.9} roughness={0.3} side={THREE.DoubleSide} />
+          </mesh>
+          {/* 深陷灯泡透镜 (Recessed Lamp Lens) */}
+          <mesh position={[0, 0, 0.02]}>
+            <sphereGeometry args={[radius, 16, 16]} />
+            <meshStandardMaterial
+              color={active ? activeColor : inactiveColor}
+              emissive={active ? activeColor : "#000000"}
+              emissiveIntensity={active ? emissiveIntensity : 0}
+              roughness={0.2}
+            />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+
   return (
-    <group position={[0, 0, 5.0]}>
-      {/* 黑色立柱 */}
-      <mesh position={[0, 2.2, 0]}>
-        <boxGeometry args={[0.22, 4.4, 0.22]} />
-        <meshStandardMaterial color="#1a1c23" metalness={0.8} roughness={0.3} />
+    <group position={[-4.5, 0, 4.0]}>
+      {/* 1. 重型钢结构基座与警示斜条纹底座 */}
+      <mesh position={[0, 0.15, 0]}>
+        <boxGeometry args={[0.9, 0.3, 0.9]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.4} />
+      </mesh>
+      <mesh position={[0, 0.32, 0]}>
+        <boxGeometry args={[0.7, 0.04, 0.7]} />
+        <meshBasicMaterial color="#facc15" />
       </mesh>
 
-      {/* 顶端 STAGED 准备灯 */}
-      <mesh position={[-0.22, 3.8, 0]}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-        <meshBasicMaterial color={isStaged ? "#ffffff" : "#333333"} />
+      {/* 2. 主桁架立柱与黑色金属箱体 (Matte Black Tower Chassis) */}
+      <mesh position={[0, 2.4, 0]}>
+        <boxGeometry args={[0.26, 4.4, 0.22]} />
+        <meshStandardMaterial color="#0f172a" metalness={0.85} roughness={0.3} />
       </mesh>
-      <mesh position={[0.22, 3.8, 0]}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-        <meshBasicMaterial color={isStaged ? "#ffffff" : "#333333"} />
-      </mesh>
-
-      {/* 黄灯 1 */}
-      <mesh position={[-0.22, 3.2, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber1 ? "#fbbf24" : "#332200"} />
-      </mesh>
-      <mesh position={[0.22, 3.2, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber1 ? "#fbbf24" : "#332200"} />
+      {/* 信号灯主背板 (Backboard Wing Shields) */}
+      <mesh position={[0, 2.7, -0.02]}>
+        <boxGeometry args={[0.82, 3.4, 0.06]} />
+        <meshStandardMaterial color="#090d16" metalness={0.9} roughness={0.3} />
       </mesh>
 
-      {/* 黄灯 2 */}
-      <mesh position={[-0.22, 2.7, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber2 ? "#fbbf24" : "#332200"} />
-      </mesh>
-      <mesh position={[0.22, 2.7, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber2 ? "#fbbf24" : "#332200"} />
-      </mesh>
+      {/* 3. PRE-STAGE 预备灯组 (顶部双白/琥珀灯) */}
+      <TreeLampPair
+        y={4.1}
+        active={isPreStage}
+        activeColor="#fef08a"
+        inactiveColor="#332d18"
+        radius={0.08}
+        emissiveIntensity={3.5}
+      />
 
-      {/* 黄灯 3 */}
-      <mesh position={[-0.22, 2.2, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber3 ? "#fbbf24" : "#332200"} />
-      </mesh>
-      <mesh position={[0.22, 2.2, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshBasicMaterial color={isAmber3 ? "#fbbf24" : "#332200"} />
-      </mesh>
+      {/* 4. STAGE 发车入位准备灯 */}
+      <TreeLampPair
+        y={3.75}
+        active={isStage}
+        activeColor="#fef08a"
+        inactiveColor="#332d18"
+        radius={0.08}
+        emissiveIntensity={3.5}
+      />
 
-      {/* 绿灯 (GO!) */}
-      <mesh position={[-0.22, 1.6, 0]}>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshBasicMaterial color={isGreen ? "#22c55e" : "#052e16"} />
-      </mesh>
-      <mesh position={[0.22, 1.6, 0]}>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshBasicMaterial color={isGreen ? "#22c55e" : "#052e16"} />
-      </mesh>
+      {/* 5. COUNTDOWN AMBER 1 (黄灯 1 - 0.5s) */}
+      <TreeLampPair
+        y={3.25}
+        active={isAmber1}
+        activeColor="#fbbf24"
+        inactiveColor="#261b04"
+        radius={0.11}
+        emissiveIntensity={5.0}
+      />
 
-      {/* 绿灯泛光 */}
-      {isGreen && <pointLight position={[0, 1.6, 0.4]} color="#22c55e" intensity={4.0} distance={12} />}
-      {isAmber3 && <pointLight position={[0, 2.2, 0.4]} color="#fbbf24" intensity={3.0} distance={10} />}
+      {/* 6. COUNTDOWN AMBER 2 (黄灯 2 - 1.0s) */}
+      <TreeLampPair
+        y={2.75}
+        active={isAmber2}
+        activeColor="#fbbf24"
+        inactiveColor="#261b04"
+        radius={0.11}
+        emissiveIntensity={5.0}
+      />
+
+      {/* 7. COUNTDOWN AMBER 3 (黄灯 3 - 1.5s) */}
+      <TreeLampPair
+        y={2.25}
+        active={isAmber3}
+        activeColor="#fbbf24"
+        inactiveColor="#261b04"
+        radius={0.11}
+        emissiveIntensity={5.5}
+      />
+
+      {/* 8. GREEN LIGHT (起跑绿灯 - GO!) */}
+      <TreeLampPair
+        y={1.70}
+        active={isGreen}
+        activeColor="#22c55e"
+        inactiveColor="#022c14"
+        radius={0.12}
+        emissiveIntensity={6.5}
+      />
+
+      {/* 9. RED LIGHT (抢跑红灯 - 待机深红) */}
+      <TreeLampPair
+        y={1.15}
+        active={false}
+        activeColor="#ef4444"
+        inactiveColor="#2b0909"
+        radius={0.11}
+        emissiveIntensity={5.0}
+      />
+
+      {/* 10. 起跑瞬间绿灯广域辉光与泛光补光 */}
+      {isGreen && <pointLight position={[0, 1.7, 0.6]} color="#22c55e" intensity={6.5} distance={15} />}
+      {isAmber3 && <pointLight position={[0, 2.25, 0.6]} color="#fbbf24" intensity={4.5} distance={12} />}
     </group>
   );
 };
