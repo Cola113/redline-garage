@@ -48,53 +48,92 @@ const WheelAssembly: React.FC<{
   const radius = isRear ? (isWideRear ? 0.38 : 0.35) : 0.33;
   const width = isRear ? (isWideRear ? 0.40 : 0.28) : 0.24;
   const rimRadius = radius * 0.70;
-  const rimDepth = width * 0.82;
+  const rimDepth = width * 0.85;
 
-  // 5 辐条径向排列角度
-  const spokeAngles = [0, 72, 144, 216, 288];
+  // 6 组精细双辐星型锻造排列角度
+  const spokeAngles = [0, 60, 120, 180, 240, 300];
+  const lugAngles = [0, 72, 144, 216, 288];
 
   return (
     <group ref={wheelRef}>
-      {/* 1. 轮胎外圈橡胶 (含圆角倒角) */}
+      {/* 1. 轮胎外圈主橡胶 (含圆角倒角与外胎壁过渡) */}
       <mesh rotation={[0, 0, Math.PI / 2]} material={rubberMat} castShadow>
-        <cylinderGeometry args={[radius, radius, width, 32]} />
+        <cylinderGeometry args={[radius, radius, width * 0.92, 32]} />
+      </mesh>
+      {/* 轮胎外侧壁倒角圆环 (Tire Sidewall Chamfer Bead) */}
+      <mesh
+        position={[isRightSide ? width * 0.46 : -width * 0.46, 0, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        material={rubberMat}
+      >
+        <torusGeometry args={[radius * 0.86, radius * 0.14, 12, 32]} />
       </mesh>
 
-      {/* 2. 轮毂深凹抛光桶身 (Deep Dish Rim Barrel & Polished Lip) */}
+      {/* 2. 轮毂深凹抛光桶身 (Deep Dish Rim Barrel & Polished Mirror Lip) */}
       <mesh
         position={[isRightSide ? width * 0.05 : -width * 0.05, 0, 0]}
         rotation={[0, 0, Math.PI / 2]}
         material={lipMat}
       >
-        <cylinderGeometry args={[rimRadius, rimRadius * 0.90, rimDepth, 24]} />
+        <cylinderGeometry args={[rimRadius, rimRadius * 0.88, rimDepth, 32]} />
       </mesh>
 
-      {/* 3. 轮毂中央五辐星型锻造盘面 (朝向外侧) */}
-      <group position={[isRightSide ? width * 0.48 : -width * 0.48, 0, 0]}>
-        {/* 中心轮毂盖与钛合金螺栓 */}
+      {/* 3. 轮毂精工细辐条锻造盘面 (Slender Forged Spokes & Center Cap) */}
+      <group position={[isRightSide ? width * 0.46 : -width * 0.46, 0, 0]}>
+        {/* 中心轮毂盖 */}
         <mesh rotation={[0, 0, Math.PI / 2]} material={rimMat}>
-          <cylinderGeometry args={[rimRadius * 0.28, rimRadius * 0.28, 0.03, 16]} />
+          <cylinderGeometry args={[rimRadius * 0.26, rimRadius * 0.26, 0.04, 20]} />
         </mesh>
-        {spokeAngles.map((deg, i) => {
+        {/* 中心 5 颗钛合金螺栓 (Lug Nuts) */}
+        {lugAngles.map((deg, i) => {
           const rad = (deg * Math.PI) / 180;
           return (
             <mesh
-              key={i}
-              position={[0, Math.sin(rad) * (rimRadius * 0.52), Math.cos(rad) * (rimRadius * 0.52)]}
-              rotation={[rad, 0, 0]}
-              material={rimMat}
+              key={`lug-${i}`}
+              position={[
+                isRightSide ? 0.022 : -0.022,
+                Math.sin(rad) * (rimRadius * 0.16),
+                Math.cos(rad) * (rimRadius * 0.16),
+              ]}
+              rotation={[0, 0, Math.PI / 2]}
+              material={lipMat}
             >
-              <boxGeometry args={[0.025, rimRadius * 0.65, 0.04]} />
+              <cylinderGeometry args={[0.012, 0.012, 0.02, 6]} />
             </mesh>
+          );
+        })}
+
+        {/* 6 根精细高光切削辐条 */}
+        {spokeAngles.map((deg, i) => {
+          const rad = (deg * Math.PI) / 180;
+          return (
+            <group
+              key={i}
+              position={[0, Math.sin(rad) * (rimRadius * 0.54), Math.cos(rad) * (rimRadius * 0.54)]}
+              rotation={[rad, 0, 0]}
+            >
+              {/* 主细辐条 */}
+              <mesh material={rimMat}>
+                <boxGeometry args={[0.016, rimRadius * 0.68, 0.028]} />
+              </mesh>
+              {/* 辐条高光边缘侧翼 */}
+              <mesh position={[isRightSide ? 0.008 : -0.008, 0, 0]} material={lipMat}>
+                <boxGeometry args={[0.008, rimRadius * 0.62, 0.018]} />
+              </mesh>
+            </group>
           );
         })}
       </group>
 
-      {/* 4. 刹车系统 (内部固定不随轮滚动) */}
+      {/* 4. 竞技打孔刹车盘与六活塞卡钳 */}
       <group position={[isRightSide ? -width * 0.12 : width * 0.12, 0, 0]}>
         {/* 钻孔通风钢制刹车盘 */}
         <mesh rotation={[0, 0, Math.PI / 2]} material={rotorMat}>
-          <cylinderGeometry args={[rimRadius * 0.84, rimRadius * 0.84, 0.02, 24]} />
+          <cylinderGeometry args={[rimRadius * 0.85, rimRadius * 0.85, 0.02, 32]} />
+        </mesh>
+        {/* 刹车盘中心金属帽 (Rotor Hat) */}
+        <mesh rotation={[0, 0, Math.PI / 2]} material={rimMat}>
+          <cylinderGeometry args={[rimRadius * 0.42, rimRadius * 0.42, 0.03, 20]} />
         </mesh>
         {/* 红色六活塞 Brembo 刹车卡钳 (固定在斜上方) */}
         <mesh
@@ -102,7 +141,7 @@ const WheelAssembly: React.FC<{
           rotation={[0, 0, isRightSide ? 0.15 : -0.15]}
           material={caliperMat}
         >
-          <boxGeometry args={[0.05, 0.08, 0.13]} />
+          <boxGeometry args={[0.05, 0.09, 0.14]} />
         </mesh>
       </group>
     </group>
@@ -608,24 +647,57 @@ export const ModularCar: React.FC<ModularCarProps> = ({
           ========================================================================= */}
       {engine?.engineType === "v8_blower" && (
         <group position={[0, 0.48, 1.05]}>
-          {/* 机械增压器机体 */}
+          {/* 1. 机械增压器机体核心 (Supercharger Blower Core) */}
           <mesh material={chromeMat} castShadow>
-            <boxGeometry args={[0.48, 0.24, 0.68]} />
+            <boxGeometry args={[0.48, 0.22, 0.68]} />
           </mesh>
-          {/* 凸出机盖的镀铬大进气铲 */}
+          {/* 增压器外壳横向散热筋 (Cooling Fins) */}
+          {[-0.07, -0.02, 0.03, 0.08].map((yOffset, idx) => (
+            <mesh key={`fin-${idx}`} position={[0, yOffset, 0]} material={chromeMat}>
+              <boxGeometry args={[0.51, 0.015, 0.65]} />
+            </mesh>
+          ))}
+
+          {/* 2. 凸出机盖的高抛光大进气铲 (High-Rise Polished Air Scoop) */}
           <mesh position={[0, 0.18, 0.12]} material={chromeMat} castShadow>
             <boxGeometry args={[0.54, 0.16, 0.50]} />
           </mesh>
-          {/* 三联红色进气蝶阀 */}
+          {/* 进气铲开口镀铬倒角唇 (Scoop Lip) */}
+          <mesh position={[0, 0.18, 0.38]} material={chromeMat}>
+            <boxGeometry args={[0.56, 0.18, 0.03]} />
+          </mesh>
+
+          {/* 3. 三联红色阳极氧化进气蝶阀 (Triple Red Throttle Butterflies) */}
           {[-0.15, 0, 0.15].map((xOffset, idx) => (
-            <mesh key={idx} position={[xOffset, 0.18, 0.38]} rotation={[Math.PI / 2, 0, 0]}>
-              <circleGeometry args={[0.062, 16]} />
-              <meshStandardMaterial color="#ff1100" emissive="#ff2200" emissiveIntensity={2.5} />
-            </mesh>
+            <group key={idx} position={[xOffset, 0.18, 0.38]}>
+              <mesh rotation={[Math.PI / 2 + 0.15, 0, 0]}>
+                <circleGeometry args={[0.062, 16]} />
+                <meshStandardMaterial color="#ef4444" emissive="#ff1100" emissiveIntensity={2.5} />
+              </mesh>
+            </group>
           ))}
-          {/* 正时皮带与滑轮 */}
-          <mesh position={[0, -0.06, 0.35]} rotation={[Math.PI / 2, 0, 0]} material={carbonFiberMat}>
-            <cylinderGeometry args={[0.12, 0.12, 0.08, 16]} />
+          {/* 蝶阀连动横轴 (Throttle Shaft Linkage) */}
+          <mesh position={[0, 0.18, 0.39]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.42, 8]} />
+            <meshStandardMaterial color="#eab308" metalness={0.9} roughness={0.2} />
+          </mesh>
+
+          {/* 4. 前置双正时皮带轮系统与碳纤维齿形皮带 (Cogged Belt & Dual Pulley Drive) */}
+          {/* 主驱动下轮 */}
+          <mesh position={[0, -0.06, 0.36]} rotation={[Math.PI / 2, 0, 0]} material={chromeMat}>
+            <cylinderGeometry args={[0.13, 0.13, 0.06, 20]} />
+          </mesh>
+          {/* 增压器上从动轮 */}
+          <mesh position={[0, 0.08, 0.36]} rotation={[Math.PI / 2, 0, 0]} material={chromeMat}>
+            <cylinderGeometry args={[0.09, 0.09, 0.06, 20]} />
+          </mesh>
+          {/* 侧向皮带张紧轮 */}
+          <mesh position={[0.12, 0.01, 0.36]} rotation={[Math.PI / 2, 0, 0]} material={chromeMat}>
+            <cylinderGeometry args={[0.04, 0.04, 0.065, 16]} />
+          </mesh>
+          {/* 宽幅齿形正时传动皮带 */}
+          <mesh position={[0, 0.01, 0.36]} material={carbonFiberMat}>
+            <boxGeometry args={[0.27, 0.22, 0.055]} />
           </mesh>
         </group>
       )}

@@ -67,38 +67,28 @@ const GarageEnvironment: React.FC<{ quality: QualitySetting }> = ({ quality }) =
         </mesh>
       </group>
 
-      {/* 3. 顶置工业吊灯 */}
-      <group ref={lampRef} position={[0, 5.5, 0]}>
-        <mesh position={[0, 0, 0]}>
-          <coneGeometry args={[0.85, 0.4, 24, 1, true]} />
-          <meshStandardMaterial color="#1e222a" roughness={0.4} metalness={0.8} side={THREE.DoubleSide} />
+      {/* 3. 顶置工作间专业摄影棚柔光箱与射灯 (Clean Studio Ceiling Softbox & Spotlights - No shadow artifacts) */}
+      <group position={[0, 6.0, 0]}>
+        {/* 顶部极简哑光吊架 */}
+        <mesh position={[0, 0.2, 0]}>
+          <boxGeometry args={[4.5, 0.08, 2.8]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.3} />
         </mesh>
-        <mesh position={[0, -0.05, 0]}>
-          <sphereGeometry args={[0.2, 16, 16]} />
-          <meshBasicMaterial color="#fffbeb" />
+        {/* 柔光漫射发光板 */}
+        <mesh position={[0, 0.12, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[4.2, 2.5]} />
+          <meshBasicMaterial color="#ffffff" />
         </mesh>
         <spotLight
-          position={[0, -0.1, 0]}
+          position={[0, -0.05, 0]}
           target-position={[0, 0, 0]}
-          intensity={6.0}
-          angle={0.9}
-          penumbra={0.6}
-          color="#fffdf5"
-          distance={16}
-          castShadow={isHigh}
+          intensity={5.5}
+          angle={0.95}
+          penumbra={0.7}
+          color="#fffdf8"
+          distance={18}
+          castShadow={false}
         />
-        {!isLow && (
-          <mesh position={[0, -2.2, 0]} rotation={[Math.PI, 0, 0]}>
-            <coneGeometry args={[2.4, 4.4, 32, 1, true]} />
-            <meshBasicMaterial
-              color="#fff4cc"
-              transparent
-              opacity={0.04}
-              side={THREE.DoubleSide}
-              depthWrite={false}
-            />
-          </mesh>
-        )}
       </group>
 
       {/* 4. 高光工矿反光地坪 */}
@@ -123,20 +113,44 @@ const GarageEnvironment: React.FC<{ quality: QualitySetting }> = ({ quality }) =
         )}
       </mesh>
 
-      {/* 5. 地面工位警示黄线 */}
+      {/* 5. 地面精细工位定位角标与警示标线 (Precision Bay Corner Guides & Markings) */}
       <group position={[0, 0.005, 0]}>
+        {/* 四角 L 型精准定位折角 */}
+        {[
+          { x: -2.2, z: -2.8, sx: 1, sz: 1 },
+          { x: 2.2, z: -2.8, sx: -1, sz: 1 },
+          { x: -2.2, z: 2.8, sx: 1, sz: -1 },
+          { x: 2.2, z: 2.8, sx: -1, sz: -1 },
+        ].map((corner, i) => (
+          <group key={i} position={[corner.x, 0, corner.z]}>
+            <mesh position={[corner.sx * 0.45, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.9, 0.06]} />
+              <meshBasicMaterial color="#eab308" />
+            </mesh>
+            <mesh position={[0, 0, corner.sz * 0.45]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.06, 0.9]} />
+              <meshBasicMaterial color="#eab308" />
+            </mesh>
+          </group>
+        ))}
+
+        {/* 细长前后对齐虚线 */}
         {[-2.2, 2.2].map((x, i) => (
-          <mesh key={i} position={[x, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.18, 5.6]} />
-            <meshBasicMaterial color="#facc15" />
+          <mesh key={`guide-${i}`} position={[x, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.04, 3.2]} />
+            <meshBasicMaterial color="#64748b" transparent opacity={0.6} />
           </mesh>
         ))}
-        {[-2.8, 2.8].map((z, i) => (
-          <mesh key={i} position={[0, 0, z]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[4.58, 0.18]} />
-            <meshBasicMaterial color="#facc15" />
-          </mesh>
-        ))}
+
+        {/* 中央底盘对齐十字标 (Chassis Staging Target) */}
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.8, 0.03]} />
+          <meshBasicMaterial color="#eab308" transparent opacity={0.7} />
+        </mesh>
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.03, 0.8]} />
+          <meshBasicMaterial color="#eab308" transparent opacity={0.7} />
+        </mesh>
       </group>
 
       {/* 6. 接触阴影 */}
