@@ -177,54 +177,62 @@ export const StagingHUD: React.FC<StagingHUDProps> = ({
 
       {/* 预备起跑仪式感：圣诞树大字提示与烧胎按钮 */}
       {isStaged && (
-        <div className="pointer-events-auto my-auto mx-auto flex flex-col items-center gap-4 rounded-3xl border border-white/20 bg-black/85 p-6 text-center backdrop-blur-2xl shadow-2xl max-w-sm">
-          <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#ff4d4f]">
+        <div className="pointer-events-auto my-auto mx-auto flex flex-col items-center gap-4 rounded-3xl border border-emerald-500/30 bg-black/90 p-6 text-center backdrop-blur-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] max-w-md w-full animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-400">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
             <Sparkles className="h-4 w-4" />
-            <span>已停入起跑线 (STAGED)</span>
+            <span>已停入发车位 (STAGE READY)</span>
           </div>
 
-          <p className="text-xs font-medium text-neutral-200">
-            起步前可先长按烧胎预热轮胎，提高胎温与初始抓地力！
-          </p>
+          {/* 主动作：大号呼吸动效发车主按钮 */}
+          <button
+            onClick={onStartCountdown}
+            className="w-full relative flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 bg-[length:200%_auto] py-4 text-sm md:text-base font-black text-black shadow-[0_0_35px_rgba(34,197,94,0.6)] animate-pulse hover:animate-none hover:brightness-110 active:scale-[0.98] transition-all"
+          >
+            <span className="text-lg">🚦</span>
+            <span>点亮圣诞树发车 (START RACE)</span>
+          </button>
 
-          {/* 轮胎热量计 */}
-          <div className="w-full space-y-1.5">
-            <div className="flex justify-between text-[11px] font-bold">
-              <span className="text-neutral-300">胎温预热抓地增益</span>
+          {/* 分隔与可选烧胎指引 */}
+          <div className="w-full flex items-center gap-3 py-0.5">
+            <div className="flex-1 h-px bg-white/15" />
+            <span className="text-[10px] uppercase font-bold text-neutral-300 tracking-wider">
+              可选预热环节 (OPTIONAL)
+            </span>
+            <div className="flex-1 h-px bg-white/15" />
+          </div>
+
+          {/* 轮胎热量计与烧胎按钮 */}
+          <div className="w-full bg-white/5 rounded-2xl p-3 border border-white/10 space-y-2.5">
+            <div className="flex justify-between items-center text-[11px] font-bold">
+              <span className="text-neutral-300 flex items-center gap-1">
+                <Flame className="h-3.5 w-3.5 text-orange-400" />
+                胎温抓地增益
+              </span>
               <span className="text-orange-400 font-mono">
                 +{(burnoutTempBonus * 0.4).toFixed(1)}% 抓地力
               </span>
             </div>
-            <div className="h-3 w-full rounded-full bg-white/15 overflow-hidden border border-white/10">
+            <div className="h-2.5 w-full rounded-full bg-black/60 overflow-hidden border border-white/10">
               <div
-                className="h-full bg-gradient-to-r from-orange-400 to-red-600 transition-all"
+                className="h-full bg-gradient-to-r from-orange-400 to-red-600 transition-all duration-100"
                 style={{ width: `${Math.min(100, burnoutTempBonus * 2)}%` }}
               />
             </div>
-          </div>
 
-          {/* 烧胎与发车按钮 */}
-          <div className="grid grid-cols-2 gap-3 w-full pt-2">
             <button
               onMouseDown={onStartBurnout}
               onMouseUp={onStopBurnout}
               onTouchStart={onStartBurnout}
               onTouchEnd={onStopBurnout}
-              className={`flex items-center justify-center gap-1.5 rounded-2xl border py-3.5 text-xs font-black transition-all shadow-lg ${
+              className={`w-full flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold transition-all ${
                 isBurningOut
-                  ? "border-red-500 bg-red-600 text-white animate-pulse"
-                  : "border-orange-500/50 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
+                  ? "border-red-500 bg-red-600 text-white shadow-[0_0_20px_#ef4444]"
+                  : "border-orange-500/40 bg-orange-500/15 text-orange-200 hover:bg-orange-500/25 active:bg-orange-500/35"
               }`}
             >
-              <Flame className="h-4 w-4" />
-              <span>按住烧胎 (Burnout)</span>
-            </button>
-
-            <button
-              onClick={onStartCountdown}
-              className="flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 py-3.5 text-xs font-black text-black shadow-xl shadow-green-950/50 hover:brightness-110 active:scale-95"
-            >
-              <span>点亮圣诞树发车</span>
+              <Flame className={`h-4 w-4 ${isBurningOut ? "animate-bounce text-yellow-300" : ""}`} />
+              <span>{isBurningOut ? "正在烧胎预热中..." : "长按此按钮进行烧胎预热 (Burnout)"}</span>
             </button>
           </div>
         </div>
