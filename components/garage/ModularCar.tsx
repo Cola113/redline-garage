@@ -20,6 +20,7 @@ interface ModularCarProps {
   isGhost?: boolean;
   ghostColor?: string;
   ghostOpacity?: number;
+  isBraking?: boolean;
 }
 
 // 独立高精度车轮总成 (High-Precision Deep Dish Forged Wheel Assembly)
@@ -174,6 +175,7 @@ export const ModularCar: React.FC<ModularCarProps> = ({
   isGhost = false,
   ghostColor = "#38bdf8",
   ghostOpacity = 0.82,
+  isBraking = false,
 }) => {
   const rootRef = useRef<THREE.Group>(null);
   const wheelsRef = useRef<{
@@ -465,9 +467,15 @@ export const ModularCar: React.FC<ModularCarProps> = ({
           {[-0.55, 0.55].map((x, i) => (
             <mesh key={i} position={[x, 0.42, -2.15]}>
               <boxGeometry args={[0.42, 0.09, 0.03]} />
-              <meshStandardMaterial color="#dc2626" emissive="#ef4444" emissiveIntensity={4.0} />
+              <meshStandardMaterial
+                color="#990000"
+                emissive="#ff0022"
+                emissiveIntensity={isBraking ? 9.5 : 4.8}
+                roughness={0.2}
+              />
             </mesh>
           ))}
+          <pointLight position={[0, 0.42, -2.25]} color="#ff0814" intensity={isBraking ? 4.2 : 2.0} distance={4.5} />
         </group>
       )}
 
@@ -507,9 +515,15 @@ export const ModularCar: React.FC<ModularCarProps> = ({
           {[-0.55, -0.35, 0.35, 0.55].map((x, i) => (
             <mesh key={i} position={[x, 0.38, -2.13]} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.075, 0.075, 0.02, 16]} />
-              <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={4.0} />
+              <meshStandardMaterial
+                color="#990000"
+                emissive="#ff0022"
+                emissiveIntensity={isBraking ? 9.5 : 4.8}
+                roughness={0.2}
+              />
             </mesh>
           ))}
+          <pointLight position={[0, 0.38, -2.25]} color="#ff0814" intensity={isBraking ? 4.2 : 2.0} distance={4.5} />
         </group>
       )}
 
@@ -538,8 +552,14 @@ export const ModularCar: React.FC<ModularCarProps> = ({
           {/* 贯穿式尾灯条 */}
           <mesh position={[0, 0.42, -2.16]}>
             <boxGeometry args={[1.58, 0.05, 0.04]} />
-            <meshStandardMaterial color="#ff0033" emissive="#ff0033" emissiveIntensity={5.0} />
+            <meshStandardMaterial
+              color="#990000"
+              emissive="#ff0022"
+              emissiveIntensity={isBraking ? 11.0 : 5.8}
+              roughness={0.2}
+            />
           </mesh>
+          <pointLight position={[0, 0.42, -2.25]} color="#ff0814" intensity={isBraking ? 4.5 : 2.2} distance={5.0} />
         </group>
       )}
 
@@ -569,6 +589,17 @@ export const ModularCar: React.FC<ModularCarProps> = ({
           {/* 超宽后轮舱碳纤护罩 */}
           <RoundedBox args={[0.26, 0.42, 1.38]} radius={0.08} smoothness={4} position={[-0.94, 0.36, -1.28]} material={carbonFiberMat} castShadow />
           <RoundedBox args={[0.26, 0.42, 1.38]} radius={0.08} smoothness={4} position={[0.94, 0.36, -1.28]} material={carbonFiberMat} castShadow />
+          {/* 尾部高位刹车警示灯 */}
+          <mesh position={[0, 0.46, -2.17]}>
+            <boxGeometry args={[0.62, 0.06, 0.04]} />
+            <meshStandardMaterial
+              color="#990000"
+              emissive="#ff0022"
+              emissiveIntensity={isBraking ? 11.0 : 5.8}
+              roughness={0.2}
+            />
+          </mesh>
+          <pointLight position={[0, 0.46, -2.25]} color="#ff0814" intensity={isBraking ? 4.5 : 2.2} distance={5.0} />
         </group>
       )}
 

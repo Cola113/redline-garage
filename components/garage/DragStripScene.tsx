@@ -612,6 +612,7 @@ export const DragStripScene: React.FC<DragStripSceneProps> = ({
 }) => {
   const playerZ = telemetry.distanceMeters;
   const oppZ = opponentDistance;
+  const isBraking = telemetry.distanceMeters >= 402.33 || (telemetry.speedMs > 5 && telemetry.throttle === 0);
 
   return (
     <Canvas
@@ -642,6 +643,7 @@ export const DragStripScene: React.FC<DragStripSceneProps> = ({
             nosActive={telemetry.nosActive}
             wheelieAngleDeg={telemetry.wheelieAngleDeg}
             tireSmokeIntensity={telemetry.tireSlipRatio}
+            isBraking={isBraking}
           />
         </group>
 
