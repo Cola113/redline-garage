@@ -214,6 +214,7 @@ export const GameApp: React.FC = () => {
   // 准备比赛 (Staging)
   const handleEnterStaging = useCallback(() => {
     soundEngine.init();
+    soundEngine.stopAllRaceSounds();
     const nosPart = PARTS_CATALOG.nos.find((n) => n.id === config.nosId);
     const initialNos = nosPart?.nosCapacitySec ?? 0;
 
@@ -351,8 +352,12 @@ export const GameApp: React.FC = () => {
         // 冲线判定 (402.33 米 / 1/4 英里)
         if (stepResult.quarterMileCrossed && !raceFinishedRef.current) {
           raceFinishedRef.current = true;
+          userThrottleRef.current = 0;
           soundEngine.updateBurnoutSound(0);
+          soundEngine.stopBurnoutSound();
           soundEngine.playNosBurst(false);
+          soundEngine.stopNosSound();
+          soundEngine.updateEngineRpm(850, configRef.current.tuning.redlineRpm, 0, engineProfile);
 
           const finalResult: RaceResult = {
             id: `race_${Date.now()}`,
@@ -376,8 +381,9 @@ export const GameApp: React.FC = () => {
 
           soundEngine.playVictoryFanfare(isPB);
 
-          // 冲线后延时 1.2 秒平滑切入成绩大屏
+          // 冲线后滑行 1.2 秒切入成绩大屏，并彻底停止所有比赛循环音源
           setTimeout(() => {
+            soundEngine.stopAllRaceSounds();
             setView("result");
           }, 1200);
         }
@@ -514,7 +520,7 @@ export const GameApp: React.FC = () => {
             onTriggerNos={handleTriggerNos}
             onRestartRace={handleEnterStaging}
             onBackToGarage={() => {
-              soundEngine.stopEngineSound();
+              soundEngine.stopAllRaceSounds();
               setView("garage");
             }}
           />
@@ -525,7 +531,7 @@ export const GameApp: React.FC = () => {
             result={latestResult}
             onRestartRace={handleEnterStaging}
             onBackToGarage={() => {
-              soundEngine.stopEngineSound();
+              soundEngine.stopAllRaceSounds();
               setView("garage");
             }}
             onOpenLeaderboard={() => setIsLeaderboardOpen(true)}

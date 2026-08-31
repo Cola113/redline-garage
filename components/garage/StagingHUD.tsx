@@ -79,7 +79,7 @@ export const StagingHUD: React.FC<StagingHUDProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              soundEngine.stopEngineSound();
+              soundEngine.stopAllRaceSounds();
               onBackToGarage();
             }}
             className="rounded-xl border border-white/20 bg-black/75 px-3 py-1.5 text-xs font-bold text-neutral-200 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white shadow-lg"
